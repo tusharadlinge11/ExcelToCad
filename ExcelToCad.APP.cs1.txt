@@ -1,0 +1,14 @@
+﻿13:10:27:081	Rebuild started at 13:10...
+13:10:27:702	1>------ Rebuild All started: Project: ExcelToCad.App, Configuration: Debug x64 ------
+13:10:27:767	Restored C:\Users\DELL\Downloads\ExcelToCad\ExcelToCad.App\ExcelToCad.App.csproj (in 427 ms).
+13:10:29:013	1>C:\Users\DELL\Downloads\ExcelToCad\ExcelToCad.App\Program.cs(27,29,27,92): warning CS8600: Converting null literal or possible null value to non-nullable type.
+13:10:29:013	1>C:\Users\DELL\Downloads\ExcelToCad\ExcelToCad.App\Program.cs(28,39,28,45): warning CS8604: Possible null reference argument for parameter 'path1' in 'string Path.Combine(string path1, string path2)'.
+13:10:29:013	1>C:\Users\DELL\Downloads\ExcelToCad\ExcelToCad.App\Program.cs(255,43,255,44): warning CS0642: Possible mistaken empty statement
+13:10:29:014	1>C:\Users\DELL\Downloads\ExcelToCad\ExcelToCad.App\Program.cs(175,43,175,47): warning CS8600: Converting null literal or possible null value to non-nullable type.
+13:10:29:014	1>C:\Users\DELL\Downloads\ExcelToCad\ExcelToCad.App\Program.cs(178,49,178,61): warning CS8600: Converting null literal or possible null value to non-nullable type.
+13:10:29:014	1>C:\Users\DELL\Downloads\ExcelToCad\ExcelToCad.App\Program.cs(248,24,248,28): warning CS0219: The variable 'endX' is assigned but its value is never used
+13:10:29:014	1>C:\Users\DELL\Downloads\ExcelToCad\ExcelToCad.App\Program.cs(157,16,157,22): warning CS0219: The variable 'bigGap' is assigned but its value is never used
+13:10:29:051	1>ExcelToCad.App -> C:\Users\DELL\Downloads\ExcelToCad\ExcelToCad.App\bin\Debug_Build\ExcelToCad.App.dll
+13:10:29:051	1>Done building project "ExcelToCad.App.csproj".
+13:10:29:063	========== Rebuild All: 1 succeeded, 0 failed, 0 skipped ==========
+13:10:29:063	========== Rebuild completed at 13:10 and took 02.011 seconds ==========
