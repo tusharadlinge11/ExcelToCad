@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <!-- Target .NET 8 to match AutoCAD 2026 managed assemblies -->
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Copy NuGet-provided assemblies to the build output so NETLOAD can find them -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- Keep output path stable (no TFMs appended) to make deployment folder predictable -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <!-- Use a dedicated build output folder so existing loaded modules (AutoCAD) don't lock the default bin folder. -->
+    <OutputPath>bin\Debug_Build\</OutputPath>
+    <Platforms>AnyCPU;x64</Platforms>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB3277</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+
+  <!-- Copy built plugin and all output files to a Deploy folder for easy NETLOAD into AutoCAD -->
+  <PropertyGroup>
+    <DeployFolder>$(ProjectDir)Deploy\</DeployFolder>
+  </PropertyGroup>
+
+  <Target Name="CopyToDeploy" AfterTargets="Build">
+    <MakeDir Directories="$(DeployFolder)" />
+    <ItemGroup>
+      <FilesToCopy Include="$(OutputPath)**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFiles="@(FilesToCopy->'$(DeployFolder)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="XLParser" Version="1.5.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="accoremgd">
+      <HintPath>..\..\AutoCAD 2026\accoremgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Acdbmgd">
+      <HintPath>..\..\AutoCAD 2026\acdbmgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Acmgd">
+      <HintPath>..\..\AutoCAD 2026\acmgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
