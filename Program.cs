@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -164,7 +163,7 @@ new Circuit{No="B4", Room="Spare", Color=5}
             bool isB = c.No.StartsWith("B");
 
             if (isY && midY == 0)
-                midY = leftY - 40;   // R series पूर्ण झाल्यावर Y series खाली सुरू
+                midY = leftY - 15;
 
             double y = isR ? leftY : isY ? midY : rightY;
 
@@ -184,8 +183,8 @@ new Circuit{No="B4", Room="Spare", Color=5}
                 branchTotalForLine = circuitLoads.Sum(a => Math.Min(15, Math.Max(1, a.Count)));
 
             double lastEntityY =
-                y - (branchTotalForLine * 3.5) -
-                ((circuitLoads == null ? 1 : circuitLoads.Count) * 10.0);
+    y - ((branchTotalForLine - 1) * 7.0) -
+    ((circuitLoads == null ? 1 : circuitLoads.Count) * 12.0);
 
             Line(ms, tr, x, topY, x, lastEntityY, layer);
             Circle(ms, tr, x, y, 1.6, layer);
@@ -208,7 +207,7 @@ new Circuit{No="B4", Room="Spare", Color=5}
 
                 Text(ms, tr,
                     c.Room,
-                    x - 120,
+                    x - 170,
                     listCenterY - 2,
                     3.5,
                     "SLD_TEXT");
@@ -232,16 +231,16 @@ new Circuit{No="B4", Room="Spare", Color=5}
 
                 Text(ms, tr,
                     c.Room,
-                    x + 75,
+                    x + 120,
                     listCenterY - 2,
                     3.5,
                     "SLD_TEXT");
             }
 
-            double used =
-                branchTotalForLine * 3.5 +
-                ((circuitLoads == null ? 1 : circuitLoads.Count) * 10.0) +
-                smallGap;
+                double used =
+                    branchTotalForLine * 7.0 +
+                    ((circuitLoads == null ? 1 : circuitLoads.Count) * 12.0) +
+                    smallGap + 10.0;
 
             if (c.No == "R4") used += 40;
             if (c.No == "Y4") used += 40;
@@ -252,7 +251,7 @@ new Circuit{No="B4", Room="Spare", Color=5}
         }
     }
     void DrawEntities(BlockTableRecord ms, Transaction tr, List<LoadItem> loads,
-    double textX, double baseY, double busX, string layer, bool leftSide)
+double textX, double baseY, double busX, string layer, bool leftSide)
     {
         if (loads == null || loads.Count == 0)
             return;
@@ -261,120 +260,191 @@ new Circuit{No="B4", Room="Spare", Color=5}
 
         double lineLength = 18;
         double branchLength = 10;
-        double branchGap = 3.5;
-        double entityGap = 10.0;
+        double branchGap = 7.0;     // symbol mule gap motha kela
+        double entityGap = 12.0;
 
         foreach (LoadItem item in loads)
         {
             int branchCount = item.Count;
+            if (branchCount < 1) branchCount = 1;
+            if (branchCount > 15) branchCount = 15;
 
-            if (branchCount < 1)
-                branchCount = 1;
+            double endX = leftSide ? busX - lineLength : busX + lineLength;
 
-            if (branchCount > 15)
-                branchCount = 15;
-
-            double endX = leftSide
-                ? busX - lineLength
-                : busX + lineLength;
-
-            // main entity connect line
-            Line(ms, tr,
-                busX,
-                y + 1.2,
-                endX,
-                y + 1.2,
-                layer);
-
-            // main connection dot
-            Circle(ms, tr,
-                busX,
-                y + 1.2,
-                1.1,
-                layer);
+            Line(ms, tr, busX, y + 1.2, endX, y + 1.2, layer);
+            Circle(ms, tr, busX, y + 1.2, 1.1, layer);
 
             double branchX;
             double labelX;
+            double symbolX;
 
             if (leftSide)
             {
-                // R/Y branches right side ने connect
                 branchX = endX + branchLength;
-
-                // R/Y branch name line पूर्ण झाल्यावर left side ला
-                labelX = branchX - 45;
+                symbolX = branchX - 12;
+                labelX = symbolX - 30;
             }
             else
             {
-                // B branches left side ने connect
                 branchX = endX - branchLength;
-
-                // B branch name line पूर्ण झाल्यावर right side ला
-                labelX = endX + 5;
+                symbolX = branchX + 12;
+                labelX = symbolX + 6;
             }
 
             double firstY = y + 1.2;
             double lastY = y - ((branchCount - 1) * branchGap) + 1.2;
 
-            // vertical connector for branches
-            Line(ms, tr,
-                branchX,
-                firstY,
-                branchX,
-                lastY,
-                layer);
+            Line(ms, tr, branchX, firstY, branchX, lastY, layer);
 
             for (int b = 0; b < branchCount; b++)
             {
                 double by = y - (b * branchGap) + 1.2;
 
-                // horizontal sub-branch
-                Line(ms, tr,
-                    endX,
-                    by,
-                    branchX,
-                    by,
-                    layer);
+                Line(ms, tr, endX, by, branchX, by, layer);
 
-                // full entity names
+                DrawEntitySymbol(ms, tr, item.Code, symbolX, by, leftSide);
+
                 string fullName = item.Code;
 
                 if (fullName == "TL") fullName = "Tube Light";
-                else if (fullName == "BL") fullName = "Bracket Light";
-                else if (fullName == "CF") fullName = "Ceiling Fan";
-                else if (fullName == "CL") fullName = "Ceiling Light";
-                else if (fullName == "BB") fullName = "Bell";
-                else if (fullName == "EF") fullName = "Exhaust Fan";
-                else if (fullName == "FL") fullName = "Foot Light";
-                else if (fullName == "CTV") fullName = "Computer/TV";
-                else if (fullName == "CHG") fullName = "Charger";
-                else if (fullName == "SS") fullName = "Shaver Socket";
-                else if (fullName == "SO") fullName = "Socket";
-                else if (fullName == "WM") fullName = "Washing Machine";
-                else if (fullName == "WP") fullName = "Water Purifier";
-                else if (fullName == "CP") fullName = "Chimney Point";
-                else if (fullName == "MX") fullName = "Mixer";
-                else if (fullName == "MW") fullName = "Microwave";
-                else if (fullName == "REF") fullName = "Refrigerator";
-                else if (fullName == "AC") fullName = "Air Conditioner";
-                else if (fullName == "GY") fullName = "Geyser";
+                else if (fullName == "BL");
+                else if (fullName == "CF");
+                else if (fullName == "CL");
+                else if (fullName == "BB");
+                else if (fullName == "EF");
+                else if (fullName == "FL");
+                else if (fullName == "CTV");
+                else if (fullName == "CHG");
+                else if (fullName == "SS");
+                else if (fullName == "SO");
+                else if (fullName == "WM");
+                else if (fullName == "WP");
+                else if (fullName == "CP");
+                else if (fullName == "MX");
+                else if (fullName == "MW");
+                else if (fullName == "REF");
+                else if (fullName == "AC");
+                else if (fullName == "GY");
 
                 string branchName = fullName + " " + (b + 1);
 
-                // branch name
-                Text(ms, tr,
-                    branchName,
-                    labelX,
-                    by - 1.2,
-                    2.5,
-                    "SLD_GREEN");
+                Text(ms, tr, branchName, labelX, by - 1.3, 2.5, "SLD_GREEN");
             }
 
-            // next entity position
             y -= (branchCount * branchGap) + entityGap;
         }
     }
 
+    void DrawEntitySymbol(BlockTableRecord ms, Transaction tr,
+     string code, double x, double y, bool leftSide)
+    {
+        string symbolLayer = "SLD_MAGENTA";
+        string redLayer = "SLD_RED";
+        string blueLayer = "SLD_BLUE";
+
+        // ---------- SWITCH ----------
+        // R/Y side: switch symbol chya right side la
+        // B side: switch symbol chya left side la
+        if (leftSide)
+        {
+            Line(ms, tr, x + 4, y - 1, x + 8, y + 1, symbolLayer);
+        }
+        else
+        {
+            Line(ms, tr, x - 4, y - 1, x - 8, y + 1, symbolLayer);
+        }
+
+        // ---------- EXTRA SWITCH ----------
+        // Socket/Charger/CTV/Shaver sarkhya points sathi 2 switches format
+        // ---------- EXTRA SWITCH ----------
+        // 2 switches entity line वर दिसतील
+        if (code == "SO" || code == "CHG" || code == "CTV" || code == "SS")
+        {
+            if (leftSide)
+            {
+                // first switch
+                Line(ms, tr,
+                    x + 4, y - 1,
+                    x + 8, y + 1,
+                    symbolLayer);
+
+                // second switch
+                Line(ms, tr,
+                    x + 10, y - 1,
+                    x + 14, y + 1,
+                    symbolLayer);
+            }
+            else
+            {
+                // first switch
+                Line(ms, tr,
+                    x - 4, y - 1,
+                    x - 8, y + 1,
+                    symbolLayer);
+
+                // second switch
+                Line(ms, tr,
+                    x - 10, y - 1,
+                    x - 14, y + 1,
+                    symbolLayer);
+            }
+        }
+
+        // ---------- LIGHT ----------
+        if (code == "TL" || code == "BL" || code == "CL")
+        {
+            Circle(ms, tr, x, y, 2.0, redLayer);
+            Line(ms, tr, x - 2.8, y, x + 2.8, y, redLayer);
+            Line(ms, tr, x, y - 2.8, x, y + 2.8, redLayer);
+        }
+
+        // ---------- FAN ----------
+        else if (code == "CF")
+        {
+            Circle(ms, tr, x, y, 1.2, blueLayer);
+            Line(ms, tr, x, y, x + 4, y + 2, blueLayer);
+            Line(ms, tr, x, y, x - 4, y + 2, blueLayer);
+            Line(ms, tr, x, y, x, y - 4, blueLayer);
+        }
+
+        // ---------- SOCKET ----------
+        else if (code == "SO" || code == "CHG" ||
+                 code == "CTV" || code == "SS")
+        {
+            Rect(ms, tr, x - 2.2, y - 1.6, x + 2.2, y + 1.6, redLayer);
+            Circle(ms, tr, x - 0.8, y, 0.3, redLayer);
+            Circle(ms, tr, x + 0.8, y, 0.3, redLayer);
+        }
+
+        // ---------- AC ----------
+        else if (code == "AC")
+        {
+            Rect(ms, tr, x - 4, y - 1.6, x + 4, y + 1.6, blueLayer);
+            Line(ms, tr, x - 2.5, y - 2.5, x + 2.5, y - 2.5, blueLayer);
+        }
+
+        // ---------- GEYSER ----------
+        else if (code == "GY")
+        {
+            Circle(ms, tr, x, y, 2.3, redLayer);
+            Line(ms, tr, x - 1.5, y + 2.3, x + 1.5, y + 2.3, redLayer);
+        }
+
+        // ---------- REF / WM / WP / MX / MW ----------
+        else if (code == "REF" || code == "WM" ||
+                 code == "WP" || code == "MX" ||
+                 code == "MW")
+        {
+            Rect(ms, tr, x - 2.5, y - 3, x + 2.5, y + 3, blueLayer);
+            Line(ms, tr, x - 1.5, y, x + 1.5, y, blueLayer);
+        }
+
+        // ---------- DEFAULT ----------
+        else
+        {
+            Circle(ms, tr, x, y, 1.8, symbolLayer);
+        }
+    }
     Dictionary<string, List<LoadItem>> ReadLoadData(string path)
     {
         Dictionary<string, List<LoadItem>> dict = new Dictionary<string, List<LoadItem>>();
